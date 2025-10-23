@@ -1,0 +1,10 @@
+{application, chat_room,
+	[{description, "聊天室服务端"},
+		{vsn, "1.0"},
+		{modules, [chat_room_app, chat_room_sup, channel,
+			channel_manager, chat_websocket_handler, database_queryer]},
+		{registered,[chat_room_sup, database_queryer, channel_manager]},
+		{applications, [kernel,stdlib,jsx]},
+		{mod, {chat_room_app,[]}},
+		{start_phases, []}
+	]}.
