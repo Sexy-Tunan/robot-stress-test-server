@@ -6,7 +6,7 @@
 -define(CHANNEL_DELETE_REQUEST_PROTOCOL_NUMBER, 12002).
 -define(JOIN_CHANNEL_REQUEST_PROTOCOL_NUMBER, 13001).
 -define(QUIT_CHANNEL_REQUEST_PROTOCOL_NUMBER, 13002).
-
+-define(MOVE_REQUEST_PROTOCOL_NUMBER, 14001).
 
 
 
@@ -20,7 +20,7 @@
 -define(JOIN_CHANNEL_BROADCAST_PROTOCOL_NUMBER, 23001).
 -define(QUIT_CHANNEL_BROADCAST_PROTOCOL_NUMBER, 23002).
 -define(LIMIT_WORLD_SEND_PROTOCOL_NUMBER, 30001).
-
+-define(MOVE_BROADCAST_PROTOCOL_NUMBER, 24001).
 
 
 
@@ -71,6 +71,26 @@
 -record(common_response_packet,{
 	user,
 	channel
+}).
+
+%% 移动请求包格式
+-record(move_request_packet,{
+	user,
+	channel,
+	from_x,
+	from_y,
+	to_x,
+	to_y
+}).
+
+%% 移动广播包格式
+-record(move_broadcast_packet,{
+	user,
+	channel,
+	from_x,
+	from_y,
+	to_x,
+	to_y
 }).
 
 

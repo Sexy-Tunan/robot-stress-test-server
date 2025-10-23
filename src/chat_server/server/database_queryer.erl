@@ -97,7 +97,8 @@ init([IsNeedInitData]) ->
 		{user,    "data/user.dets",    user_ets,    #user.name},
 %%		{msg,     "data/msg.dets",     msg_ets,     #msg.user_name},
 		{channel, "data/channel.dets", channel_ets, #channel.name},
-		{channel_user, "data/channel_user.dets", channel_user_ets, #channel_user.channel_name}
+		{channel_user, "data/channel_user.dets", channel_user_ets, #channel_user.channel_name},
+		{channel_map, "data/channel_map.dets", channel_map_ets, #channel_map.channel_name}
 	],
 	Tables = load_all_dets_to_ets(TablesInfo),
 	case IsNeedInitData of
@@ -138,10 +139,10 @@ init_data(Tables) ->
 	case maps:get(channel,Tables,undefined) of
 		undefined -> nothing;
 		#{ets := Ets2} ->
-			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("channel of bruce"),creator = unicode:characters_to_binary("Bruce",utf8,utf8), alive = true}),
-			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("channel of ben"),creator = unicode:characters_to_binary("Ben",utf8,utf8), alive = true}),
-			ets:insert(Ets2,#channel{name=unicode:characters_to_binary(?WORLD_CHANNEL),creator = unicode:characters_to_binary("admin",utf8,utf8), alive = true}),
-			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("菜狗的频道"),creator = unicode:characters_to_binary("菜狗",utf8,utf8), alive = true})
+%%			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("channel of bruce"),creator = unicode:characters_to_binary("Bruce",utf8,utf8), alive = true}),
+%%			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("channel of ben"),creator = unicode:characters_to_binary("Ben",utf8,utf8), alive = true}),
+			ets:insert(Ets2,#channel{name=unicode:characters_to_binary(?WORLD_CHANNEL),creator = unicode:characters_to_binary("admin",utf8,utf8), alive = true})
+%%			ets:insert(Ets2,#channel{name=unicode:characters_to_binary("菜狗的频道"),creator = unicode:characters_to_binary("菜狗",utf8,utf8), alive = true})
 	end,
 
 	case maps:get(channel_user,Tables,undefined) of
@@ -149,10 +150,16 @@ init_data(Tables) ->
 		#{ets := Ets3} ->
 			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL,utf8,utf8), user_name = unicode:characters_to_binary("Bruce",utf8,utf8)}),
 			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL,utf8,utf8), user_name = unicode:characters_to_binary("Ben",utf8,utf8)}),
-			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL,utf8,utf8), user_name = unicode:characters_to_binary("菜狗",utf8,utf8)}),
-			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("channel of bruce",utf8,utf8), user_name = unicode:characters_to_binary("Bruce",utf8,utf8)}),
-			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("channel of ben",utf8,utf8), user_name = unicode:characters_to_binary("Ben",utf8,utf8)}),
-			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("菜狗的频道",utf8,utf8), user_name = unicode:characters_to_binary("菜狗",utf8,utf8)})
+			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL,utf8,utf8), user_name = unicode:characters_to_binary("菜狗",utf8,utf8)})
+%%			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("channel of bruce",utf8,utf8), user_name = unicode:characters_to_binary("Bruce",utf8,utf8)}),
+%%			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("channel of ben",utf8,utf8), user_name = unicode:characters_to_binary("Ben",utf8,utf8)}),
+%%			ets:insert(Ets3,#channel_user{channel_name = unicode:characters_to_binary("菜狗的频道",utf8,utf8), user_name = unicode:characters_to_binary("菜狗",utf8,utf8)})
+	end,
+
+	case maps:get(channel_map, Tables, undefined) of
+		undefined -> nothing;
+		#{ets := Ets4} ->
+			ets:insert(Ets4, #channel_map{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL, utf8, utf8), width = 100, length = 100})
 	end.
 
 

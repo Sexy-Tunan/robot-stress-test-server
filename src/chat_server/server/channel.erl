@@ -22,6 +22,7 @@ start(ChannelName) ->
 init([ChannelName]) ->
 	put(channelName, ChannelName),
 	io:format("创建[~ts]频道进程,[~p]~n",[ChannelName,self()]),
+	io:format("初始化[~ts]频道的地图为"),
 	%% 不使用named_table选项，这样就不会全局注册导致冲突
 	Ets = ets:new(user_pid_ets,[set, private, {keypos, #user_pid.user_name}]),
 	{ok,Ets}.
@@ -42,6 +43,14 @@ handle_info({msg,SenderName,Message},State) ->
 
 	%% 得到的是[[pid1],[[pid2]]，需展开
 	[Pid ! {msg_broadcast,ChannelName,SenderName,Message} || [Pid] <- PidList],
+	{noreply, State};
+
+%% 处理移动消息并广播
+handle_info({move, User, FromX, FromY, ToX, ToY}, State) ->
+	ChannelName = get(channelName),
+	PidList = ets:match(State, {'_','_','$1'}),
+	%% 向所有用户广播移动消息
+	[Pid ! {move_broadcast, ChannelName, User, FromX, FromY, ToX, ToY} || [Pid] <- PidList],
 	{noreply, State};
 
 %% 用户向频道注册自己的信息

@@ -176,7 +176,23 @@ new_loop(Socket,State) ->
 					database_queryer:remove_channel_user_record(Quitter, ChannelName),
 					%% 向频道进程注销自己的信息，其会向其他客户端广播说明自己的退出
 					ChannelPid ! {user_revoke, Quitter},
-					{ok, State}
+					{ok, State};
+
+
+				%% 用户移动
+				?MOVE_REQUEST_PROTOCOL_NUMBER ->
+					User = maps:get(user,DataMap),
+					ChannelName = maps:get(channel,DataMap),
+					FromX = maps:get(from_x,DataMap),
+					FromY = maps:get(from_y,DataMap),
+					ToX = maps:get(to_x,DataMap),
+					ToY = maps:get(to_y,DataMap),
+					io:format("用户[~ts]在[~ts]地图从(~p,~p)移动到(~p,~p)~n",[User,ChannelName,FromX,FromY,ToX,ToY]),
+					{ok, ChannelPid} = channel_manager:query_channel_pid(ChannelName),
+					%% 向频道进程发送移动消息，频道会广播给所有用户
+					ChannelPid ! {move, User, FromX, FromY, ToX, ToY},
+					inet:setopts(Socket, [{active, once}]),
+					new_loop(Socket, State)
 			end;
 
 
@@ -248,8 +264,28 @@ new_loop(Socket,State) ->
 			PacketLength = 2 + byte_size(PayloadJsonBin),
 			Packet =
 				<<
-	%%				PacketLength:32/big-unsigned-integer,
 					?DELETE_CHANNEL_BROADCAST_PROTOCOL_NUMBER:16/big-unsigned-integer,
+					PayloadJsonBin/binary
+				>>,
+			gen_tcp:send(Socket,Packet),
+			new_loop(Socket,State);
+
+
+		%% 接受移动广播消息
+		{move_broadcast, ChannelName, User, FromX, FromY, ToX, ToY} ->
+			io:format("用户[~ts]接受到了移动广播: ~ts在地图[~ts]从(~p,~p)移动到(~p,~p)~n",
+				[maps:get(user,State),User,ChannelName,FromX,FromY,ToX,ToY]),
+			PayloadJsonBin = jsx:encode(#{
+				user => User,
+				channel => ChannelName,
+				from_x => FromX,
+				from_y => FromY,
+				to_x => ToX,
+				to_y => ToY
+			}),
+			Packet =
+				<<
+					?MOVE_BROADCAST_PROTOCOL_NUMBER:16/big-unsigned-integer,
 					PayloadJsonBin/binary
 				>>,
 			gen_tcp:send(Socket,Packet),
