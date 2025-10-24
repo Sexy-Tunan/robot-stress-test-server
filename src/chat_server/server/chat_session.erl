@@ -91,8 +91,8 @@ new_loop(Socket,State) ->
 										?LIMIT_WORLD_SEND_PROTOCOL_NUMBER:16/big-unsigned-integer,
 										PayloadJsonBin/binary
 									>>,
-									inet:setopts(Socket, [{active, once}]),
 									gen_tcp:send(Socket, Packet),
+									inet:setopts(Socket, [{active, once}]),
 									new_loop(Socket, State)
 							end;
 						false ->
@@ -103,8 +103,6 @@ new_loop(Socket,State) ->
 							inet:setopts(Socket, [{active, once}]),
 							new_loop(Socket, State)
 					end;
-
-
 
 				%% 用户创建频道
 				?CHANNEL_CREATE_REQUEST_PROTOCOL_NUMBER ->
@@ -179,6 +177,23 @@ new_loop(Socket,State) ->
 					{ok, State};
 
 
+				%% 用户请求频道地图
+				?MAP_REQUEST_PROTOCOL_NUMBER ->
+					ChannelName = maps:get(channel,DataMap),
+					JsonPayloadBin = case database_queryer:query_channel_map_info(ChannelName) of
+						{ok,ChannelMapRecord} ->
+							jsx:encode(#{state => true, channel => ChannelName, width => ChannelMapRecord#channel_map.width, height => ChannelMapRecord#channel_map.height});
+						{error, not_found} ->
+							jsx:encode(#{state => false, reason => unicode:characters_to_binary("无此频道地图",utf8,utf8)})
+					end,
+					Packet = <<
+						?MAP_RESPONSE_PROTOCOL_NUMBER:16/big-unsigned-integer,
+						JsonPayloadBin/binary
+					>>,
+					gen_tcp:send(Socket, Packet),
+					inet:setopts(Socket, [{active, once}]),
+					new_loop(Socket, State);
+
 				%% 用户移动
 				?MOVE_REQUEST_PROTOCOL_NUMBER ->
 					User = maps:get(user,DataMap),
@@ -190,7 +205,7 @@ new_loop(Socket,State) ->
 					io:format("用户[~ts]在[~ts]地图从(~p,~p)移动到(~p,~p)~n",[User,ChannelName,FromX,FromY,ToX,ToY]),
 					{ok, ChannelPid} = channel_manager:query_channel_pid(ChannelName),
 					%% 向频道进程发送移动消息，频道会广播给所有用户
-					ChannelPid ! {move, User, FromX, FromY, ToX, ToY},
+%%					ChannelPid ! {move, User, FromX, FromY, ToX, ToY},
 					inet:setopts(Socket, [{active, once}]),
 					new_loop(Socket, State)
 			end;
@@ -294,10 +309,7 @@ new_loop(Socket,State) ->
 
 
 terminate(_Reason, State) ->
-%%	Socket = maps:get(socket,State),
-%%	UserName = maps:get(user,State),
-
-
+	io:format("断开连接[~p]",[self()]),
 	ok.
 
 

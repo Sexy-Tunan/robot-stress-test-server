@@ -22,7 +22,8 @@
 -export([add_channel_record/2,remove_channel_record/2,query_all_channel_name_alive/0, query_all_channel_info_with_members/0]).
 %% 频道用户api
 -export([add_channel_user_record/2, remove_channel_user_record/2, query_joined_channel_info/1, query_channel_info_with_members_by_channel/1]).
-
+%% 频道地图api
+-export([query_channel_map_info/1]).
 
 
 -spec query_user_message_by_user_name(user_name()) -> user_message().
@@ -82,8 +83,12 @@ query_all_channel_info_with_members() -> gen_server:call(?MODULE,{query_all_chan
 %% @Return {ok, [{channel_name => ChannelName, members => Members},{channel_name => ChannelName, members => Members},......] }
 query_channel_info_with_members_by_channel(ChannelName) -> gen_server:call(?MODULE,{query_channel_info_with_members_by_channel, channel_user, channel, ChannelName}).
 
+%% 根据用户名字查询已加入频道的信息，包括频道成员
+%% @Return {ok, [{channel_name => ChannelName, members => Members},{channel_name => ChannelName, members => Members},......] }
 query_joined_channel_info(UserName) -> gen_server:call(?MODULE,{query_joined_channel_info, channel_user, UserName}).
 
+%% 查询所有频道的地图
+query_channel_map_info(ChannelName) -> gen_server:call(?MODULE,{query_channel_map_info, channel_map, ChannelName}).
 %% ====================================================================
 %% 初始化方法
 init([IsNeedInitData]) ->
@@ -159,7 +164,7 @@ init_data(Tables) ->
 	case maps:get(channel_map, Tables, undefined) of
 		undefined -> nothing;
 		#{ets := Ets4} ->
-			ets:insert(Ets4, #channel_map{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL, utf8, utf8), width = 100, length = 100})
+			ets:insert(Ets4, #channel_map{channel_name = unicode:characters_to_binary(?WORLD_CHANNEL, utf8, utf8), width = 100, height = 100})
 	end.
 
 
@@ -308,6 +313,19 @@ handle_call({query_joined_channel_info, TableName, User}, _From, State) ->
 			JoinedChannelList = ets:match(Ets, {'_','$1',User}),
 			{reply, {ok, [X || [X] <- JoinedChannelList]}, State}
 	end;
+
+handle_call({query_channel_map_info, TableName, ChannelName}, _From, State) ->
+	#state{tables = Tables} = State,
+	case maps:get(TableName,Tables, undefined) of
+		undefined -> {reply, {error, no_such_table}, State};
+		#{ets := Ets} ->
+			%% 查询指定频道的地图
+			case ets:lookup(Ets, ChannelName) of
+				[ChannelMap] -> {reply, {ok, ChannelMap}, State};
+				[] -> {reply, not_found, State}
+			end
+	end;
+
 
 handle_call(stop, _From, State) ->
 	#state{tables = Tables} = State,

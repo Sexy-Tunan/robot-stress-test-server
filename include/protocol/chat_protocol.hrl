@@ -7,6 +7,7 @@
 -define(JOIN_CHANNEL_REQUEST_PROTOCOL_NUMBER, 13001).
 -define(QUIT_CHANNEL_REQUEST_PROTOCOL_NUMBER, 13002).
 -define(MOVE_REQUEST_PROTOCOL_NUMBER, 14001).
+-define(MAP_REQUEST_PROTOCOL_NUMBER, 15001).
 
 
 
@@ -21,6 +22,7 @@
 -define(QUIT_CHANNEL_BROADCAST_PROTOCOL_NUMBER, 23002).
 -define(LIMIT_WORLD_SEND_PROTOCOL_NUMBER, 30001).
 -define(MOVE_BROADCAST_PROTOCOL_NUMBER, 24001).
+-define(MAP_RESPONSE_PROTOCOL_NUMBER, 25001).
 
 
 
@@ -68,6 +70,7 @@
 	message
 }).
 %% 用户频道广播消息响应,依据协议号不同，user有不同的意义，如果是创建频道就是creater，如果是加入频道就是joiner
+%% 即 频道创建/删除，用户加入/退出，请求频道地图 的数据通用包格式
 -record(common_response_packet,{
 	user,
 	channel
@@ -91,6 +94,15 @@
 	from_y,
 	to_x,
 	to_y
+}).
+
+%% 地图请求包格式
+-record(map_response_packet, {
+	state,
+	channel,
+	width,
+	height,
+	reason
 }).
 
 

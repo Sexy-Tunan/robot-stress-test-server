@@ -3,7 +3,7 @@
 -record(channel, {name, creator, alive}).
 -record(msg, {user_name, channel_name, time, message}).
 -record(channel_user, {channel_name, user_name}).
--record(channel_map, {channel_name, width,length}).
+-record(channel_map, {channel_name, width,height}).
 
 %% 缓存频道进程与对应pid的关系
 -record(channel_pid, {channel_name, pid}).

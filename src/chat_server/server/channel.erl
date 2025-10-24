@@ -22,7 +22,6 @@ start(ChannelName) ->
 init([ChannelName]) ->
 	put(channelName, ChannelName),
 	io:format("创建[~ts]频道进程,[~p]~n",[ChannelName,self()]),
-	io:format("初始化[~ts]频道的地图为"),
 	%% 不使用named_table选项，这样就不会全局注册导致冲突
 	Ets = ets:new(user_pid_ets,[set, private, {keypos, #user_pid.user_name}]),
 	{ok,Ets}.
@@ -105,7 +104,6 @@ handle_info(broadcast_shutdown, State) ->
 			%% 世界频道通知所有客户端断联
 			io:format("世界频道开始通知所有客户端断联~n"),
 			AllUserPidList = ets:match(State, {'_','_','$1'}),
-			io:format("啦啦啦~p~n",[[Pid || [Pid] <- AllUserPidList]]),
 			[Pid ! {broadcast_shutdown, everyone} || [Pid] <- AllUserPidList],
 			{stop, normal, State};
 		false -> {stop, normal, State}
