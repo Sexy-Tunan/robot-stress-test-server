@@ -2,12 +2,8 @@
 /shelf/
 /workspace.xml
 
-_build/*
 
-ebin/*.beam
-**/ebin/*.beam
-*.beam
+./*.xml
 
 
-# 忽略临时文件
-*.log
+../*.iml
